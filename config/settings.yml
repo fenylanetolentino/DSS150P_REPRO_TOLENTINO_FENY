@@ -1,0 +1,17 @@
+# Pipeline settings. Paths are relative to the project root.
+# Environment variables in .env can override some values (see src/config.py).
+paths:
+  source_file: data/source/dataset.csv
+  raw_dir: data/raw
+  staging_dir: data/staging
+  curated_dir: data/curated
+  partitioned_dir: data/partitioned
+  quarantine_dir: data/quarantine
+  checkpoint_file: data/raw/checkpoint.json
+  manifest_file: metadata/source_manifest.yml
+  contract_file: metadata/data_contract.yml
+
+ingestion:
+  num_batches: 4
+  sequence_column: "Unnamed: 0"
+  business_key: track_id

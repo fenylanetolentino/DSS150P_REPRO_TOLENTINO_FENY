@@ -1,0 +1,44 @@
+=== 0. Before any ingestion: verification must fail (no checkpoint) ===
+{"timestamp": "2026-10-01T15:33:04+00:00", "pipeline_run_id": "run_20261001T153304Z_c792fc", "stage": "cli", "message": "run started", "command": "verify-batches"}
+{"timestamp": "2026-10-01T15:33:04+00:00", "pipeline_run_id": "run_20261001T153304Z_c792fc", "stage": "cli", "message": "run finished", "status": "failed", "exit_code": 1, "error": "No checkpoint found; nothing to verify."}
+=== 1. First run: full ingestion ===
+{"timestamp": "2026-10-01T15:33:06+00:00", "pipeline_run_id": "run_20261001T153306Z_aa4d98", "stage": "cli", "message": "run started", "command": "ingest-full"}
+{"timestamp": "2026-10-01T15:33:06+00:00", "pipeline_run_id": "run_20261001T153306Z_aa4d98", "stage": "ingest", "message": "source checksum verified", "source_checksum": "b202fa49909b2d5cef71a04b1d21243cfeb36414535f2ca9272aa646721177bd"}
+{"timestamp": "2026-10-01T15:33:08+00:00", "pipeline_run_id": "run_20261001T153306Z_aa4d98", "stage": "ingest_full", "message": "full ingestion complete", "rows": 114000, "raw_dir": "data\\raw\\full\\run_20261001T153306Z_aa4d98", "duration_s": 1.52}
+{"timestamp": "2026-10-01T15:33:08+00:00", "pipeline_run_id": "run_20261001T153306Z_aa4d98", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+=== 2. Incremental run, interrupted after batch 2 ===
+{"timestamp": "2026-10-01T15:33:10+00:00", "pipeline_run_id": "run_20261001T153310Z_3b2c2b", "stage": "cli", "message": "run started", "command": "ingest-batches"}
+{"timestamp": "2026-10-01T15:33:11+00:00", "pipeline_run_id": "run_20261001T153310Z_3b2c2b", "stage": "ingest", "message": "source checksum verified", "source_checksum": "b202fa49909b2d5cef71a04b1d21243cfeb36414535f2ca9272aa646721177bd"}
+{"timestamp": "2026-10-01T15:33:13+00:00", "pipeline_run_id": "run_20261001T153310Z_3b2c2b", "stage": "ingest_batches", "message": "batch committed", "batch_id": 1, "rows": 28500, "first_key": 0, "last_key": 28499, "duration_s": 1.15}
+{"timestamp": "2026-10-01T15:33:14+00:00", "pipeline_run_id": "run_20261001T153310Z_3b2c2b", "stage": "ingest_batches", "message": "batch committed", "batch_id": 2, "rows": 28500, "first_key": 28500, "last_key": 56999, "duration_s": 0.96}
+{"timestamp": "2026-10-01T15:33:14+00:00", "pipeline_run_id": "run_20261001T153310Z_3b2c2b", "stage": "cli", "message": "run finished", "status": "interrupted", "exit_code": 2, "error": "Simulated interruption after batch 2."}
+=== 3. Verification after the interruption (partial) ===
+{"timestamp": "2026-10-01T15:33:17+00:00", "pipeline_run_id": "run_20261001T153317Z_776508", "stage": "cli", "message": "run started", "command": "verify-batches"}
+{"timestamp": "2026-10-01T15:33:17+00:00", "pipeline_run_id": "run_20261001T153317Z_776508", "stage": "verify_batches", "message": "row and duplicate verification", "batches_committed": [1, 2], "total_rows": 57000, "distinct_keys": 57000, "duplicate_keys": 0, "expected_rows_when_complete": 114000, "complete": false}
+{"timestamp": "2026-10-01T15:33:17+00:00", "pipeline_run_id": "run_20261001T153317Z_776508", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+=== 4. Resumed run ===
+{"timestamp": "2026-10-01T15:33:20+00:00", "pipeline_run_id": "run_20261001T153320Z_7df308", "stage": "cli", "message": "run started", "command": "ingest-batches"}
+{"timestamp": "2026-10-01T15:33:20+00:00", "pipeline_run_id": "run_20261001T153320Z_7df308", "stage": "ingest", "message": "source checksum verified", "source_checksum": "b202fa49909b2d5cef71a04b1d21243cfeb36414535f2ca9272aa646721177bd"}
+{"timestamp": "2026-10-01T15:33:21+00:00", "pipeline_run_id": "run_20261001T153320Z_7df308", "stage": "ingest_batches", "message": "batch already committed, skipped", "batch_id": 1}
+{"timestamp": "2026-10-01T15:33:21+00:00", "pipeline_run_id": "run_20261001T153320Z_7df308", "stage": "ingest_batches", "message": "batch already committed, skipped", "batch_id": 2}
+{"timestamp": "2026-10-01T15:33:22+00:00", "pipeline_run_id": "run_20261001T153320Z_7df308", "stage": "ingest_batches", "message": "batch committed", "batch_id": 3, "rows": 28500, "first_key": 57000, "last_key": 85499, "duration_s": 0.96}
+{"timestamp": "2026-10-01T15:33:23+00:00", "pipeline_run_id": "run_20261001T153320Z_7df308", "stage": "ingest_batches", "message": "batch committed", "batch_id": 4, "rows": 28500, "first_key": 85500, "last_key": 113999, "duration_s": 1.01}
+{"timestamp": "2026-10-01T15:33:23+00:00", "pipeline_run_id": "run_20261001T153320Z_7df308", "stage": "ingest_batches", "message": "incremental ingestion finished", "committed_this_run": [3, 4], "skipped": [1, 2], "completed_total": 4, "num_batches": 4}
+{"timestamp": "2026-10-01T15:33:23+00:00", "pipeline_run_id": "run_20261001T153320Z_7df308", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+=== 5. Final verification ===
+{"timestamp": "2026-10-01T15:33:26+00:00", "pipeline_run_id": "run_20261001T153326Z_c727dd", "stage": "cli", "message": "run started", "command": "verify-batches"}
+{"timestamp": "2026-10-01T15:33:28+00:00", "pipeline_run_id": "run_20261001T153326Z_c727dd", "stage": "verify_batches", "message": "row and duplicate verification", "batches_committed": [1, 2, 3, 4], "total_rows": 114000, "distinct_keys": 114000, "duplicate_keys": 0, "expected_rows_when_complete": 114000, "complete": true}
+{"timestamp": "2026-10-01T15:33:28+00:00", "pipeline_run_id": "run_20261001T153326Z_c727dd", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+=== 6. Rerun: committed batches must be skipped ===
+{"timestamp": "2026-10-01T15:33:30+00:00", "pipeline_run_id": "run_20261001T153330Z_081f3b", "stage": "cli", "message": "run started", "command": "ingest-batches"}
+{"timestamp": "2026-10-01T15:33:30+00:00", "pipeline_run_id": "run_20261001T153330Z_081f3b", "stage": "ingest", "message": "source checksum verified", "source_checksum": "b202fa49909b2d5cef71a04b1d21243cfeb36414535f2ca9272aa646721177bd"}
+{"timestamp": "2026-10-01T15:33:31+00:00", "pipeline_run_id": "run_20261001T153330Z_081f3b", "stage": "ingest_batches", "message": "batch already committed, skipped", "batch_id": 1}
+{"timestamp": "2026-10-01T15:33:31+00:00", "pipeline_run_id": "run_20261001T153330Z_081f3b", "stage": "ingest_batches", "message": "batch already committed, skipped", "batch_id": 2}
+{"timestamp": "2026-10-01T15:33:31+00:00", "pipeline_run_id": "run_20261001T153330Z_081f3b", "stage": "ingest_batches", "message": "batch already committed, skipped", "batch_id": 3}
+{"timestamp": "2026-10-01T15:33:31+00:00", "pipeline_run_id": "run_20261001T153330Z_081f3b", "stage": "ingest_batches", "message": "batch already committed, skipped", "batch_id": 4}
+{"timestamp": "2026-10-01T15:33:31+00:00", "pipeline_run_id": "run_20261001T153330Z_081f3b", "stage": "ingest_batches", "message": "incremental ingestion finished", "committed_this_run": [], "skipped": [1, 2, 3, 4], "completed_total": 4, "num_batches": 4}
+{"timestamp": "2026-10-01T15:33:31+00:00", "pipeline_run_id": "run_20261001T153330Z_081f3b", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+=== 7. Verification after rerun ===
+{"timestamp": "2026-10-01T15:33:34+00:00", "pipeline_run_id": "run_20261001T153334Z_1111d8", "stage": "cli", "message": "run started", "command": "verify-batches"}
+{"timestamp": "2026-10-01T15:33:36+00:00", "pipeline_run_id": "run_20261001T153334Z_1111d8", "stage": "verify_batches", "message": "row and duplicate verification", "batches_committed": [1, 2, 3, 4], "total_rows": 114000, "distinct_keys": 114000, "duplicate_keys": 0, "expected_rows_when_complete": 114000, "complete": true}
+{"timestamp": "2026-10-01T15:33:36+00:00", "pipeline_run_id": "run_20261001T153334Z_1111d8", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}

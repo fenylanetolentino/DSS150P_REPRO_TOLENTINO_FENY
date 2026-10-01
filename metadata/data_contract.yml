@@ -1,0 +1,57 @@
+# Data contract for the Spotify Tracks source dataset.
+# on_violation values: fail (stop the pipeline), quarantine (move the row to
+# data/quarantine/ with a reason), warn (log it and continue).
+contract:
+  id: spotify-tracks-contract
+  version: 1.0.0
+  dataset_id: spotify-tracks-dataset
+  source_manifest: metadata/source_manifest.yml
+  source_sha256: "b202fa49909b2d5cef71a04b1d21243cfeb36414535f2ca9272aa646721177bd"
+  target: popularity
+  business_key: track_id
+  source_row_key: "Unnamed: 0"
+
+  # Order matches the CSV header. Types: int, float, string, bool.
+  columns:
+    - {name: "Unnamed: 0", type: int, nullable: false, unique: true, min: 0, on_violation: fail}
+    - {name: track_id, type: string, nullable: false, on_violation: quarantine}
+    - {name: artists, type: string, nullable: false, on_violation: quarantine}
+    - {name: album_name, type: string, nullable: false, on_violation: quarantine}
+    - {name: track_name, type: string, nullable: false, on_violation: quarantine}
+    - {name: popularity, type: int, nullable: false, min: 0, max: 100, on_violation: fail}
+    - {name: duration_ms, type: int, nullable: false, min: 0, on_violation: warn}
+    - {name: explicit, type: bool, nullable: false, on_violation: fail}
+    - {name: danceability, type: float, nullable: false, min: 0.0, max: 1.0, on_violation: fail}
+    - {name: energy, type: float, nullable: false, min: 0.0, max: 1.0, on_violation: fail}
+    - {name: key, type: int, nullable: false, min: 0, max: 11, on_violation: fail}
+    - {name: loudness, type: float, nullable: false, min: -60.0, max: 10.0, on_violation: warn}
+    - {name: mode, type: int, nullable: false, allowed: [0, 1], on_violation: fail}
+    - {name: speechiness, type: float, nullable: false, min: 0.0, max: 1.0, on_violation: fail}
+    - {name: acousticness, type: float, nullable: false, min: 0.0, max: 1.0, on_violation: fail}
+    - {name: instrumentalness, type: float, nullable: false, min: 0.0, max: 1.0, on_violation: fail}
+    - {name: liveness, type: float, nullable: false, min: 0.0, max: 1.0, on_violation: fail}
+    - {name: valence, type: float, nullable: false, min: 0.0, max: 1.0, on_violation: fail}
+    - {name: tempo, type: float, nullable: false, min: 0.0, max: 300.0, on_violation: warn}
+    - {name: time_signature, type: int, nullable: false, min: 0, max: 5, on_violation: warn}
+    - {name: track_genre, type: string, nullable: false, on_violation: quarantine}
+
+  # Derived target used only for the stratified split, never as a feature.
+  derived_tier:
+    name: popularity_tier
+    from: popularity
+    low: "popularity <= 33"
+    mid: "34 <= popularity <= 66"
+    high: "popularity > 66"
+
+  dataset_rules:
+    - {id: checksum_matches_manifest, rule: "SHA-256 of the source file equals source_sha256", on_violation: fail}
+    - {id: required_columns_present, rule: "every column listed above exists in the file", on_violation: fail}
+    - {id: unexpected_columns, rule: "columns not listed above are present", on_violation: warn}
+    - {id: raw_row_count, rule: "raw rows equal 114000 for a full ingestion", on_violation: fail}
+    - {id: source_row_key_unique, rule: "Unnamed: 0 has no duplicates", on_violation: fail}
+    - {id: null_metadata_rows, rule: "rows with null artists, album_name, or track_name", expected_count: 1, on_violation: quarantine}
+    - {id: duplicate_track_id_rows, rule: "rows repeating an earlier track_id, ordered by Unnamed: 0, first row kept", expected_count: 24259, on_violation: quarantine}
+    - {id: staging_row_count, rule: "staging rows equal 89740", on_violation: fail}
+    - {id: business_key_unique_in_staging, rule: "track_id has no duplicates after staging", on_violation: fail}
+    - {id: target_complete, rule: "popularity null rate equals 0", on_violation: fail}
+    - {id: no_target_leakage, rule: "popularity and popularity_tier are not in the model feature list", on_violation: fail}

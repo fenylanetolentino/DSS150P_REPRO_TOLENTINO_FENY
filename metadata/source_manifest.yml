@@ -1,0 +1,28 @@
+# Source manifest: identity of the single authoritative source dataset.
+dataset:
+  id: spotify-tracks-dataset
+  name: Spotify Tracks Dataset
+  creator: Maharshi Pandya
+  source_url: https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset
+  license_note: "ODbL (database) with Database Contents terms, as shown on the Kaggle page"
+  redistributed_in_repo: false
+  prior_work: "Group project: Mood versus Technical Audio Features in Predicting Spotify Track Popularity (Predictive Analytics, Mapua University)"
+
+file:
+  expected_filename: dataset.csv
+  placement: data/source/dataset.csv
+  format: csv
+  encoding: utf-8
+  delimiter: ","
+  size_bytes: 20118244
+  sha256: "b202fa49909b2d5cef71a04b1d21243cfeb36414535f2ca9272aa646721177bd"
+  rows: 114000
+  columns: 21
+
+acquisition:
+  steps:
+    - Download the dataset from the Kaggle URL above (a free Kaggle login may be required).
+    - Extract the CSV named dataset.csv from the download.
+    - Copy it, unchanged, to data/source/dataset.csv.
+    - Verify that its SHA-256 equals the sha256 value in this file.
+  if_checksum_differs: "The download is a different snapshot of the dataset. Do not run the pipeline; obtain the original file used for this project."

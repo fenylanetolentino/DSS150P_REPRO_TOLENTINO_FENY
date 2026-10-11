@@ -4,6 +4,8 @@ Run from the project root, for example:
     python -m src.cli ingest-full
     python -m src.cli ingest-batches
     python -m src.cli verify-batches
+    python -m src.cli build-staging
+    python -m src.cli build-curated
 
 Exit codes: 0 = success, 1 = unrecoverable error, 2 = simulated interruption.
 """
@@ -13,6 +15,7 @@ import sys
 from src.config import load_settings, log_event, new_run_id
 from src.ingest import (IngestionError, SimulatedInterruption, full_ingest,
                         incremental_ingest, verify_batches)
+from src.transform import ContractViolation, build_curated, build_staging
 
 
 def build_parser():
@@ -33,6 +36,14 @@ def build_parser():
     verify = commands.add_parser(
         "verify-batches", help="count rows and duplicate keys in raw batches")
     verify.add_argument("--run-id", help="reuse a run id (default: generate one)")
+
+    staging = commands.add_parser(
+        "build-staging", help="raw batches -> typed, validated, deduplicated staging")
+    staging.add_argument("--run-id", help="reuse a run id (default: generate one)")
+
+    curated = commands.add_parser(
+        "build-curated", help="staging -> curated, model-ready columns")
+    curated.add_argument("--run-id", help="reuse a run id (default: generate one)")
     return parser
 
 
@@ -49,11 +60,15 @@ def main(argv=None):
                                stop_after=args.stop_after)
         elif args.command == "verify-batches":
             verify_batches(settings, run_id)
+        elif args.command == "build-staging":
+            build_staging(settings, run_id)
+        elif args.command == "build-curated":
+            build_curated(settings, run_id)
     except SimulatedInterruption as error:
         log_event(run_id, "cli", "run finished", status="interrupted",
                   exit_code=2, error=str(error))
         return 2
-    except IngestionError as error:
+    except (IngestionError, ContractViolation) as error:
         log_event(run_id, "cli", "run finished", status="failed",
                   exit_code=1, error=str(error))
         return 1

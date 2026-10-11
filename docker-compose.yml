@@ -1,0 +1,44 @@
+# DSS150P Lab 4 - Docker Compose: pipeline + PostgreSQL
+
+services:
+  postgres:
+    image: postgres:16.4-alpine
+    container_name: dss150p-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  pipeline:
+    build: .
+    image: dss150p-pipeline:local
+    container_name: dss150p-pipeline
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SOURCE_FILE_PATH: data/source/dataset.csv
+      RANDOM_SEED: ${RANDOM_SEED:-42}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./data:/app/data
+      - ./metadata:/app/metadata
+      - ./outputs:/app/outputs
+
+volumes:
+  pgdata:

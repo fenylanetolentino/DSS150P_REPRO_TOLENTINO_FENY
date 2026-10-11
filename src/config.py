@@ -1,7 +1,8 @@
 """Settings, run identifiers, and structured logging for the pipeline.
 
 All paths in settings.yml are relative to the project root, so the code runs
-the same way on any machine.
+the same way on any machine. Secrets and machine-specific values (database
+host, port, user, password, random seed) come from environment variables.
 """
 import json
 import os
@@ -26,6 +27,30 @@ def load_settings():
         settings["paths"]["source_file"] = source_override
     settings["random_seed"] = int(os.getenv("RANDOM_SEED", "42"))
     return settings
+
+
+def get_database_settings():
+    """Return PostgreSQL connection values read from environment variables.
+
+    Raises a clear error if a required value is missing. The password is
+    returned for connecting but must never be logged.
+    """
+    load_dotenv(PROJECT_ROOT / ".env")
+    required = ["POSTGRES_HOST", "POSTGRES_PORT", "POSTGRES_DB",
+                "POSTGRES_USER", "POSTGRES_PASSWORD"]
+    missing = [name for name in required if not os.getenv(name)]
+    if missing:
+        raise RuntimeError(
+            "Missing database settings in the environment or .env: "
+            + ", ".join(missing)
+        )
+    return {
+        "host": os.getenv("POSTGRES_HOST"),
+        "port": int(os.getenv("POSTGRES_PORT")),
+        "dbname": os.getenv("POSTGRES_DB"),
+        "user": os.getenv("POSTGRES_USER"),
+        "password": os.getenv("POSTGRES_PASSWORD"),
+    }
 
 
 def resolve(relative_path):

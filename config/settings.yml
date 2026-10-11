@@ -1,5 +1,7 @@
 # Pipeline settings. Paths are relative to the project root.
-# Environment variables in .env can override some values (see src/config.py).
+# Environment variables in .env override some values (see src/config.py):
+# SOURCE_FILE_PATH, RANDOM_SEED, and the POSTGRES_* connection values.
+# Secrets (the database password) are never stored in this file.
 paths:
   source_file: data/source/dataset.csv
   raw_dir: data/raw
@@ -10,8 +12,57 @@ paths:
   checkpoint_file: data/raw/checkpoint.json
   manifest_file: metadata/source_manifest.yml
   contract_file: metadata/data_contract.yml
+  split_manifest_file: metadata/split_manifest.json
+  expected_metrics_file: metadata/expected_metrics.json
+  metrics_file: outputs/metrics.json
+  predictions_file: outputs/predictions.csv
+  model_dir: outputs/model
 
 ingestion:
   num_batches: 4
   sequence_column: "Unnamed: 0"
   business_key: track_id
+
+# Prior-project cleaning rules (paper Section III.B)
+cleaning:
+  required_metadata_columns: [artists, album_name, track_name]
+  dedupe_key: track_id
+  dedupe_keep: first
+  order_by: "Unnamed: 0"
+
+# Declared target and final feature list (order matters for the model)
+target: popularity
+features:
+  - danceability
+  - energy
+  - valence
+  - acousticness
+  - liveness
+  - loudness
+  - tempo
+  - key
+  - mode
+  - time_signature
+  - instrumentalness
+  - speechiness
+
+# Prior-project split: stratified on popularity tier (paper Section III.G)
+split:
+  method: stratified_train_test_split
+  test_size: 0.2
+  stratify_on: popularity_tier
+  tiers:
+    low_max: 33
+    mid_max: 66
+
+# Prior-project model: untuned defaults (paper Section IV.A)
+model:
+  family: RandomForestRegressor
+  params:
+    n_estimators: 100
+    n_jobs: -1
+  # random_state is taken from random_seed (RANDOM_SEED in .env)
+
+# Non-secret database settings; host, port, and credentials come from .env
+database:
+  schema: public

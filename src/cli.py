@@ -6,6 +6,8 @@ Run from the project root, for example:
     python -m src.cli verify-batches
     python -m src.cli build-staging
     python -m src.cli build-curated
+    python -m src.cli load-postgres
+    python -m src.cli verify-postgres
 
 Exit codes: 0 = success, 1 = unrecoverable error, 2 = simulated interruption.
 """
@@ -15,6 +17,7 @@ import sys
 from src.config import load_settings, log_event, new_run_id
 from src.ingest import (IngestionError, SimulatedInterruption, full_ingest,
                         incremental_ingest, verify_batches)
+from src.storage import StorageError, load_curated, verify_load
 from src.transform import ContractViolation, build_curated, build_staging
 
 
@@ -33,17 +36,16 @@ def build_parser():
     batches.add_argument("--stop-after", type=int, metavar="N",
                          help="simulate a crash after batch N is committed")
 
-    verify = commands.add_parser(
-        "verify-batches", help="count rows and duplicate keys in raw batches")
-    verify.add_argument("--run-id", help="reuse a run id (default: generate one)")
-
-    staging = commands.add_parser(
-        "build-staging", help="raw batches -> typed, validated, deduplicated staging")
-    staging.add_argument("--run-id", help="reuse a run id (default: generate one)")
-
-    curated = commands.add_parser(
-        "build-curated", help="staging -> curated, model-ready columns")
-    curated.add_argument("--run-id", help="reuse a run id (default: generate one)")
+    simple = {
+        "verify-batches": "count rows and duplicate keys in raw batches",
+        "build-staging": "raw batches -> typed, validated, deduplicated staging",
+        "build-curated": "staging -> curated, model-ready columns",
+        "load-postgres": "load the curated layer into PostgreSQL (rerun-safe)",
+        "verify-postgres": "check PostgreSQL row count and duplicate keys",
+    }
+    for name, help_text in simple.items():
+        sub = commands.add_parser(name, help=help_text)
+        sub.add_argument("--run-id", help="reuse a run id (default: generate one)")
     return parser
 
 
@@ -64,11 +66,15 @@ def main(argv=None):
             build_staging(settings, run_id)
         elif args.command == "build-curated":
             build_curated(settings, run_id)
+        elif args.command == "load-postgres":
+            load_curated(settings, run_id)
+        elif args.command == "verify-postgres":
+            verify_load(settings, run_id)
     except SimulatedInterruption as error:
         log_event(run_id, "cli", "run finished", status="interrupted",
                   exit_code=2, error=str(error))
         return 2
-    except (IngestionError, ContractViolation) as error:
+    except (IngestionError, ContractViolation, StorageError) as error:
         log_event(run_id, "cli", "run finished", status="failed",
                   exit_code=1, error=str(error))
         return 1

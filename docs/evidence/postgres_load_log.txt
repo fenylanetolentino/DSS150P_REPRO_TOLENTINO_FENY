@@ -1,0 +1,22 @@
+== Load run 3 (rerun, expect inserted=0 updated=0 unchanged=89740) ==
+{"timestamp": "2026-10-12T05:14:17+00:00", "pipeline_run_id": "run_20261012T051417Z_08c92a", "stage": "cli", "message": "run started", "command": "load-postgres"}
+{"timestamp": "2026-10-12T05:14:18+00:00", "pipeline_run_id": "run_20261012T051417Z_08c92a", "stage": "load_postgres", "message": "load started", "rows_read": 89740}
+{"timestamp": "2026-10-12T05:14:36+00:00", "pipeline_run_id": "run_20261012T051417Z_08c92a", "stage": "load_postgres", "message": "load finished", "rows_read": 89740, "rows_inserted": 0, "rows_updated": 0, "rows_unchanged": 89740, "duration_seconds": 19.01}
+{"timestamp": "2026-10-12T05:14:36+00:00", "pipeline_run_id": "run_20261012T051417Z_08c92a", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+== Verification ==
+{"timestamp": "2026-10-12T05:14:51+00:00", "pipeline_run_id": "run_20261012T051451Z_df7557", "stage": "cli", "message": "run started", "command": "verify-postgres"}
+{"timestamp": "2026-10-12T05:14:52+00:00", "pipeline_run_id": "run_20261012T051451Z_df7557", "stage": "verify_postgres", "message": "table verification", "table_rows": 89740, "distinct_track_ids": 89740, "duplicate_track_ids": 0, "expected_rows": 89740, "matches_curated": true}
+{"timestamp": "2026-10-12T05:14:52+00:00", "pipeline_run_id": "run_20261012T051451Z_df7557", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+== Database state: row counts and run records (runs 1 and 2 are the earlier loads) ==
+ rows  | distinct_ids 
+-------+--------------
+ 89740 |        89740
+(1 row)
+
+       pipeline_run_id       |     stage     | status  | rows_read | rows_inserted | rows_updated | rows_unchanged 
+-----------------------------+---------------+---------+-----------+---------------+--------------+----------------
+ run_20261012T051150Z_64cdb0 | load_postgres | success |     89740 |         89740 |            0 |              0
+ run_20261012T051224Z_9e332c | load_postgres | success |     89740 |             0 |            0 |          89740
+ run_20261012T051417Z_08c92a | load_postgres | success |     89740 |             0 |            0 |          89740
+(3 rows)
+

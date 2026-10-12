@@ -8,12 +8,14 @@ Run from the project root, for example:
     python -m src.cli build-curated
     python -m src.cli load-postgres
     python -m src.cli verify-postgres
+    python -m src.cli benchmark-storage
 
 Exit codes: 0 = success, 1 = unrecoverable error, 2 = simulated interruption.
 """
 import argparse
 import sys
 
+from src.benchmark import run_benchmark
 from src.config import load_settings, log_event, new_run_id
 from src.ingest import (IngestionError, SimulatedInterruption, full_ingest,
                         incremental_ingest, verify_batches)
@@ -42,6 +44,7 @@ def build_parser():
         "build-curated": "staging -> curated, model-ready columns",
         "load-postgres": "load the curated layer into PostgreSQL (rerun-safe)",
         "verify-postgres": "check PostgreSQL row count and duplicate keys",
+        "benchmark-storage": "compare CSV, JSONL, Parquet, partitions, PostgreSQL",
     }
     for name, help_text in simple.items():
         sub = commands.add_parser(name, help=help_text)
@@ -70,6 +73,8 @@ def main(argv=None):
             load_curated(settings, run_id)
         elif args.command == "verify-postgres":
             verify_load(settings, run_id)
+        elif args.command == "benchmark-storage":
+            run_benchmark(settings, run_id)
     except SimulatedInterruption as error:
         log_event(run_id, "cli", "run finished", status="interrupted",
                   exit_code=2, error=str(error))

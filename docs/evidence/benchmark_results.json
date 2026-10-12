@@ -1,0 +1,222 @@
+{
+  "pipeline_run_id": "run_20261012T052223Z_1732e6",
+  "generated_at_utc": "2026-10-12T05:23:24+00:00",
+  "dataset_rows": 89740,
+  "logical_columns": [
+    "track_id",
+    "source_row_key",
+    "track_genre",
+    "danceability",
+    "energy",
+    "valence",
+    "acousticness",
+    "liveness",
+    "loudness",
+    "tempo",
+    "key",
+    "mode",
+    "time_signature",
+    "instrumentalness",
+    "speechiness",
+    "popularity",
+    "popularity_tier",
+    "record_hash"
+  ],
+  "method": {
+    "repeats_per_read_test": 5,
+    "cold_run_included_in_median": true,
+    "writes_measured": "once per representation",
+    "os_cache_cleared": false,
+    "partition_note": "no natural date/time/region column; track_genre is a pedagogical partition for this experiment"
+  },
+  "environment": {
+    "python": "3.12.10",
+    "pandas": "3.0.6",
+    "pyarrow": "25.0.1",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "postgres": "PostgreSQL 16.4 on x86_64-pc-linux-musl"
+  },
+  "formats": {
+    "csv": {
+      "size_bytes": 15659845,
+      "write_seconds": 1.5182,
+      "read_full": {
+        "runs_seconds": [
+          0.8394,
+          0.9023,
+          1.024,
+          0.9023,
+          0.9437
+        ],
+        "first_run_seconds": 0.8394,
+        "median_seconds": 0.9023,
+        "min_seconds": 0.8394,
+        "max_seconds": 1.024
+      },
+      "read_one_genre": {
+        "runs_seconds": [
+          0.8994,
+          1.1184,
+          1.256,
+          1.1393,
+          1.0788
+        ],
+        "first_run_seconds": 0.8994,
+        "median_seconds": 1.1184,
+        "min_seconds": 0.8994,
+        "max_seconds": 1.256
+      },
+      "same_records_as_curated": true
+    },
+    "jsonl": {
+      "size_bytes": 38254773,
+      "write_seconds": 1.5091,
+      "read_full": {
+        "runs_seconds": [
+          2.951,
+          2.6083,
+          2.8219,
+          2.2482,
+          1.8061
+        ],
+        "first_run_seconds": 2.951,
+        "median_seconds": 2.6083,
+        "min_seconds": 1.8061,
+        "max_seconds": 2.951
+      },
+      "read_one_genre": {
+        "runs_seconds": [
+          1.9725,
+          1.9956,
+          1.7998,
+          1.6544,
+          1.7196
+        ],
+        "first_run_seconds": 1.9725,
+        "median_seconds": 1.7998,
+        "min_seconds": 1.6544,
+        "max_seconds": 1.9956
+      },
+      "same_records_as_curated": true
+    },
+    "parquet": {
+      "size_bytes": 10567133,
+      "write_seconds": 0.2818,
+      "read_full": {
+        "runs_seconds": [
+          0.0614,
+          0.0402,
+          0.0411,
+          0.0403,
+          0.032
+        ],
+        "first_run_seconds": 0.0614,
+        "median_seconds": 0.0403,
+        "min_seconds": 0.032,
+        "max_seconds": 0.0614
+      },
+      "read_one_genre": {
+        "runs_seconds": [
+          0.0479,
+          0.0317,
+          0.0352,
+          0.0298,
+          0.0415
+        ],
+        "first_run_seconds": 0.0479,
+        "median_seconds": 0.0352,
+        "min_seconds": 0.0298,
+        "max_seconds": 0.0479
+      },
+      "same_records_as_curated": true
+    },
+    "parquet_partitioned": {
+      "size_bytes": 14159374,
+      "write_seconds": 0.3137,
+      "read_full": {
+        "runs_seconds": [
+          2.1068,
+          0.1827,
+          0.2324,
+          0.1895,
+          0.2244
+        ],
+        "first_run_seconds": 2.1068,
+        "median_seconds": 0.2244,
+        "min_seconds": 0.1827,
+        "max_seconds": 2.1068
+      },
+      "read_one_genre": {
+        "runs_seconds": [
+          0.0593,
+          0.0789,
+          0.0695,
+          0.0991,
+          0.0666
+        ],
+        "first_run_seconds": 0.0593,
+        "median_seconds": 0.0695,
+        "min_seconds": 0.0593,
+        "max_seconds": 0.0991
+      },
+      "same_records_as_curated": true,
+      "partition_count": 113,
+      "selected_partition_bytes": 149495
+    },
+    "postgresql": {
+      "size_bytes": 26697728,
+      "table_only_bytes": 19898368,
+      "size_note": "pg_total_relation_size (table + indexes); table_only_bytes excludes indexes",
+      "write_seconds": 11.7252,
+      "read_full": {
+        "runs_seconds": [
+          1.8597,
+          1.7035,
+          1.6838,
+          1.6198,
+          1.7877
+        ],
+        "first_run_seconds": 1.8597,
+        "median_seconds": 1.7035,
+        "min_seconds": 1.6198,
+        "max_seconds": 1.8597
+      },
+      "read_one_genre": {
+        "runs_seconds": [
+          0.0365,
+          0.0372,
+          0.0488,
+          0.0536,
+          0.0566
+        ],
+        "first_run_seconds": 0.0365,
+        "median_seconds": 0.0488,
+        "min_seconds": 0.0365,
+        "max_seconds": 0.0566
+      },
+      "full_table_query_aggregate": {
+        "runs_seconds": [
+          0.0625,
+          0.0355,
+          0.0495,
+          0.0499,
+          0.0444
+        ],
+        "first_run_seconds": 0.0625,
+        "median_seconds": 0.0495,
+        "min_seconds": 0.0355,
+        "max_seconds": 0.0625
+      },
+      "same_records_as_curated": true
+    }
+  },
+  "partition_demo": {
+    "partition_column": "track_genre",
+    "partition_value": "acoustic",
+    "expected_rows": 1000,
+    "parquet_partition_rows": 1000,
+    "postgresql_rows": 1000,
+    "row_counts_match": true
+  },
+  "duration_seconds": 61.82
+}

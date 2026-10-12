@@ -66,3 +66,13 @@ model:
 # Non-secret database settings; host, port, and credentials come from .env
 database:
   schema: public
+
+# Storage experiment (DSS150P Section 8). The dataset has no date, time, or
+# region column, so track_genre is a pedagogical partition for the experiment.
+benchmark:
+  repeats: 5
+  partition_column: track_genre
+  partition_value: acoustic
+  table: benchmark_tracks
+  formats_dir: data/curated/formats
+  results_file: docs/evidence/benchmark_results.json

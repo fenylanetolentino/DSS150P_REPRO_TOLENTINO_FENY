@@ -221,4 +221,8 @@ def verify_batches(settings, run_id):
         "complete": len(checkpoint["completed_batches"]) == checkpoint["num_batches"],
     }
     log_event(run_id, "verify_batches", "row and duplicate verification", **result)
+    if result["duplicate_keys"] > 0:
+        raise IngestionError(f"duplicate keys in raw batches: {result}")
+    if result["complete"] and result["total_rows"] != expected_rows:
+        raise IngestionError(f"raw row count differs from the manifest: {result}")
     return result

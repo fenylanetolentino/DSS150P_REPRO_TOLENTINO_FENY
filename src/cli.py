@@ -20,7 +20,8 @@ import sys
 
 from src.benchmark import run_benchmark
 from src.config import load_settings, log_event, new_run_id
-from src.evaluate import evaluate_model, reproducibility_check
+from src.evaluate import (evaluate_model, publish_outputs,
+                          reproducibility_check)
 from src.ingest import (IngestionError, SimulatedInterruption, full_ingest,
                         incremental_ingest, verify_batches)
 from src.storage import StorageError, load_curated, verify_load
@@ -53,6 +54,7 @@ def build_parser():
         "train-model": "deterministic split, train-only scaler, train the model",
         "evaluate-model": "predict the test rows, write metrics.json and predictions.csv",
         "reproducibility-check": "compare metrics.json with the baseline within tolerance",
+        "publish-outputs": "check the delivery outputs exist and are non-empty",
     }
     for name, help_text in simple.items():
         sub = commands.add_parser(name, help=help_text)
@@ -89,6 +91,8 @@ def main(argv=None):
             evaluate_model(settings, run_id)
         elif args.command == "reproducibility-check":
             reproducibility_check(settings, run_id)
+        elif args.command == "publish-outputs":
+            publish_outputs(settings, run_id)
     except SimulatedInterruption as error:
         log_event(run_id, "cli", "run finished", status="interrupted",
                   exit_code=2, error=str(error))

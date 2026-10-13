@@ -165,3 +165,26 @@ def reproducibility_check(settings, run_id):
             f"reproduction failed: outside tolerance {tolerance} or structure checks failed: "
             f"{ {k: v for k, v in checks.items() if not v} } worse_metrics={worse}")
     return comparison
+
+
+def publish_outputs(settings, run_id):
+    """Delivery check (DSS150P Section 9): curated dataset, metrics.json, predictions and model exist."""
+    from src.storage import CURATED_FILE
+    curated = resolve(settings["paths"]["curated_dir"]) / CURATED_FILE
+    metrics = resolve(settings["paths"]["metrics_file"])
+    predictions = resolve(settings["paths"]["predictions_file"])
+    model_dir = resolve(settings["paths"]["model_dir"])
+    missing = [str(p) for p in (curated, metrics, predictions)
+               if not p.exists() or p.stat().st_size == 0]
+    if not (model_dir / MODEL_FILE).exists():
+        missing.append(str(model_dir))
+    if missing:
+        raise ModelError(f"delivery outputs missing or empty: {missing}")
+    summary = {
+        "curated_rows": len(pd.read_parquet(curated, columns=["track_id"])),
+        "prediction_rows": len(pd.read_csv(predictions)),
+        "metrics": sorted(json.loads(metrics.read_text(encoding="utf-8"))["metrics"]),
+        "model_files": sorted(p.name for p in model_dir.iterdir()),
+    }
+    log_event(run_id, "publish_outputs", "delivery outputs present", **summary)
+    return summary

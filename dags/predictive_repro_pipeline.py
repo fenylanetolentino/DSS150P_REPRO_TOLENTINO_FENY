@@ -69,7 +69,7 @@ with DAG(
     transform_staging = cli("transform_staging", "build-staging")
     build_curated = cli("build_curated", "build-curated")
     load_postgres = cli("load_postgres", "load-postgres")
-    validate_curated = cli("validate_curated", "verify-postgres")
+    validate_curated = cli("validate_curated", "validate-curated")
     train_model = cli("train_model", "train-model")
     evaluate_model = cli("evaluate_model", "evaluate-model")
     reproducibility_check = cli("reproducibility_check", "reproducibility-check")

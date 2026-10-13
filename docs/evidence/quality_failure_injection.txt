@@ -1,0 +1,70 @@
+=== 1. BEFORE: checksums of the curated layer and model outputs ===
+b551f8c4d22a83d9c4c4b6af9febd91e3c72d9d4e69251e98547481d7531dfb0 *data/curated/curated.parquet
+4d4244f44075d99af36ded36b6e4535afcc9c311168c5f7ac4dc507f67ca435e *outputs/metrics.json
+5d0f5237bad4567de10dabe14a1026565879ac550c34a1c415fbb63536523d9e *outputs/predictions.csv
+fdf4f9d60bee61e7ec5cc29fa7cabdaa0cbbb7888c16fee1256a9aa75754649b *outputs/model/model.joblib
+9d2a0bf4986be31cf8bf14fa94bb6bb0185b0f53b413a323622b92b6d1fc3cea *metadata/split_manifest.json
+=== 2. INJECT: duplicate track_id in row 0, popularity=150 in row 2 ===
+injected into data/curated/curated.parquet (backup kept in a temporary folder)
+=== 3. RUN validate-curated on the invalid curated layer (expected: exit code 1) ===
+{"timestamp": "2026-10-13T10:21:00+00:00", "pipeline_run_id": "failure_injection_001", "stage": "cli", "message": "run started", "command": "validate-curated"}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "check passed", "category": "schema", "check": "required_columns_and_types", "passed": true, "detail": "17 required columns present with valid types"}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "check passed", "category": "completeness", "check": "target_and_features_null_rate_zero", "passed": true, "detail": "0 nulls across 13 columns"}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "check failed", "category": "uniqueness", "check": "track_id_and_source_row_key_unique", "passed": false, "detail": "duplicate track_id: 1, duplicate source_row_key: 0"}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "check failed", "category": "validity", "check": "contract_ranges_and_allowed_values", "passed": false, "detail": "violations: {'popularity': 1}; warn-only: {}"}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "check passed", "category": "business_rule", "check": "curated_row_count_matches_contract", "passed": true, "detail": "curated rows 89740, contract expects 89740"}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "check passed", "category": "freshness_applicability", "check": "source_checksum_matches", "passed": true, "detail": "actual b202fa49909b..., expected b202fa49909b..."}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "check passed", "category": "predictive_integrity", "check": "no_target_leakage", "passed": true, "detail": "popularity and popularity_tier are not in the 12 features"}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "check passed", "category": "predictive_integrity", "check": "feature_dimensions_and_order", "passed": true, "detail": "12 features, same names and order as the trained model"}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "check failed", "category": "predictive_integrity", "check": "train_test_overlap_and_manifest_match", "passed": false, "detail": "train 71792, test 17948, overlapping rows 0, overlapping track_id 1, sizes add up True, train checksum matches manifest True, test checksum matches manifest True"}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "validate_curated", "message": "quality checks finished", "checks_run": 9, "checks_failed": 3, "duration_seconds": 0.65}
+{"timestamp": "2026-10-13T10:21:01+00:00", "pipeline_run_id": "failure_injection_001", "stage": "cli", "message": "run finished", "status": "failed", "exit_code": 1, "error": "quality checks failed: ['track_id_and_source_row_key_unique', 'contract_ranges_and_allowed_values', 'train_test_overlap_and_manifest_match']"}
+exit code: 1
+=== 4. run record of the failed run ===
+{
+  "pipeline_run_id": "failure_injection_001",
+  "started_at_utc": "2026-10-13T10:21:00+00:00",
+  "stages": [
+    {
+      "stage": "validate-curated",
+      "status": "failed",
+      "started_at_utc": "2026-10-13T10:21:00+00:00",
+      "finished_at_utc": "2026-10-13T10:21:01+00:00",
+      "duration_seconds": 0.65,
+      "exit_code": 1,
+      "error": "quality checks failed: ['track_id_and_source_row_key_unique', 'contract_ranges_and_allowed_values', 'train_test_overlap_and_manifest_match']",
+      "attempts": 1
+    }
+  ],
+  "status": "failed",
+  "updated_at_utc": "2026-10-13T10:21:01+00:00",
+  "counts": {
+    "raw_rows": null,
+    "staging_rows": null,
+    "curated_rows": null,
+    "train_rows": null,
+    "test_rows": null,
+    "prediction_rows": null
+  }
+}
+=== 5. AFTER the failure: did bad data reach the model outputs? ===
+RESULT: model outputs byte-identical, bad data did not reach them
+=== 6. CORRECT: restore the original curated layer ===
+b551f8c4d22a83d9c4c4b6af9febd91e3c72d9d4e69251e98547481d7531dfb0 *data/curated/curated.parquet
+b551f8c4d22a83d9c4c4b6af9febd91e3c72d9d4e69251e98547481d7531dfb0 *data/curated/curated.parquet
+=== 7. RERUN validate-curated after the fix (expected: exit code 0) ===
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "cli", "message": "run started", "command": "validate-curated"}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "check passed", "category": "schema", "check": "required_columns_and_types", "passed": true, "detail": "17 required columns present with valid types"}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "check passed", "category": "completeness", "check": "target_and_features_null_rate_zero", "passed": true, "detail": "0 nulls across 13 columns"}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "check passed", "category": "uniqueness", "check": "track_id_and_source_row_key_unique", "passed": true, "detail": "duplicate track_id: 0, duplicate source_row_key: 0"}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "check passed", "category": "validity", "check": "contract_ranges_and_allowed_values", "passed": true, "detail": "all contract ranges and allowed values hold"}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "check passed", "category": "business_rule", "check": "curated_row_count_matches_contract", "passed": true, "detail": "curated rows 89740, contract expects 89740"}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "check passed", "category": "freshness_applicability", "check": "source_checksum_matches", "passed": true, "detail": "actual b202fa49909b..., expected b202fa49909b..."}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "check passed", "category": "predictive_integrity", "check": "no_target_leakage", "passed": true, "detail": "popularity and popularity_tier are not in the 12 features"}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "check passed", "category": "predictive_integrity", "check": "feature_dimensions_and_order", "passed": true, "detail": "12 features, same names and order as the trained model"}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "check passed", "category": "predictive_integrity", "check": "train_test_overlap_and_manifest_match", "passed": true, "detail": "train 71792, test 17948, overlapping rows 0, overlapping track_id 0, sizes add up True, train checksum matches manifest True, test checksum matches manifest True"}
+{"timestamp": "2026-10-13T10:21:09+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "validate_curated", "message": "quality checks finished", "checks_run": 9, "checks_failed": 0, "duration_seconds": 0.54}
+{"timestamp": "2026-10-13T10:21:10+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "verify_postgres", "message": "table verification", "table_rows": 89740, "distinct_track_ids": 89740, "duplicate_track_ids": 0, "expected_rows": 89740, "matches_curated": true}
+{"timestamp": "2026-10-13T10:21:10+00:00", "pipeline_run_id": "failure_injection_recovery_001", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+exit code: 0
+=== done ===

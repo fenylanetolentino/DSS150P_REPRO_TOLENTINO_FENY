@@ -1,0 +1,26 @@
+{
+  "pipeline_run_id": "failure_injection_001",
+  "started_at_utc": "2026-10-13T10:21:00+00:00",
+  "stages": [
+    {
+      "stage": "validate-curated",
+      "status": "failed",
+      "started_at_utc": "2026-10-13T10:21:00+00:00",
+      "finished_at_utc": "2026-10-13T10:21:01+00:00",
+      "duration_seconds": 0.65,
+      "exit_code": 1,
+      "error": "quality checks failed: ['track_id_and_source_row_key_unique', 'contract_ranges_and_allowed_values', 'train_test_overlap_and_manifest_match']",
+      "attempts": 1
+    }
+  ],
+  "status": "failed",
+  "updated_at_utc": "2026-10-13T10:21:01+00:00",
+  "counts": {
+    "raw_rows": null,
+    "staging_rows": null,
+    "curated_rows": null,
+    "train_rows": null,
+    "test_rows": null,
+    "prediction_rows": null
+  }
+}

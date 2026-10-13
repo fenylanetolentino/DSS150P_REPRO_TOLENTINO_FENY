@@ -1,6 +1,6 @@
 {
-  "pipeline_run_id": "af_manual__20261013T072941.1087640000",
-  "generated_at_utc": "2026-10-13T07:33:14+00:00",
+  "pipeline_run_id": "af_quality_checks_run_01",
+  "generated_at_utc": "2026-10-13T10:31:03+00:00",
   "primary_metric": "rmse",
   "metrics": {
     "rmse": 17.972665422019826,

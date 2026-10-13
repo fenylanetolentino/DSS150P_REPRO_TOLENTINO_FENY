@@ -1,0 +1,152 @@
+=== trigger predictive_repro_pipeline with run id quality_checks_run_01 (force_refresh=false) ===
+No paused DAGs were found
+2026-10-13T10:27:19.625751Z [info     ] creating dag run               [airflow.serialization.definitions.dag] loc=dag.py:615 logical_date=None partition_key=None run_after=datetime.datetime(2026, 10, 13, 10, 27, 19, 599602, tzinfo=Timezone('UTC')) run_id=quality_checks_run_01
+     |                       |                       |                     |                   |          | last_scheduling_decis |              |          |            |        |                     
+conf | dag_id                | dag_run_id            | data_interval_start | data_interval_end | end_date | ion                   | logical_date | run_type | start_date | state  | triggering_user_name
+=====+=======================+=======================+=====================+===================+==========+=======================+==============+==========+============+========+=====================
+{}   | predictive_repro_pipe | quality_checks_run_01 | None                | None              | None     | None                  | None         | manual   | None       | queued | airflow             
+     | line                  |                       |                     |                   |          |                       |              |          |            |        |                     
+                                                                                                                                                                                                        
+=== poll task states every 20 s (max 15 min) ===
+18:27:47  success=2 failed=0
+18:28:13  success=2 failed=0
+18:28:41  success=3 failed=0
+18:29:08  success=4 failed=0
+18:29:34  success=6 failed=0
+18:30:08  success=6 failed=0
+18:30:38  success=7 failed=0
+18:31:20  success=8 failed=0
+18:31:47  success=10 failed=0
+=== final task states ===
+dag_id                    | logical_date | task_id               | state   | start_date                       | end_date                        
+==========================+==============+=======================+=========+==================================+=================================
+predictive_repro_pipeline |              | ingest_source         | success | 2026-10-13T10:27:22.008204+00:00 | 2026-10-13T10:27:31.060971+00:00
+predictive_repro_pipeline |              | validate_raw          | success | 2026-10-13T10:27:31.907687+00:00 | 2026-10-13T10:27:37.215965+00:00
+predictive_repro_pipeline |              | transform_staging     | success | 2026-10-13T10:27:38.308845+00:00 | 2026-10-13T10:28:23.989125+00:00
+predictive_repro_pipeline |              | build_curated         | success | 2026-10-13T10:28:25.043687+00:00 | 2026-10-13T10:29:00.912148+00:00
+predictive_repro_pipeline |              | load_postgres         | success | 2026-10-13T10:29:01.490501+00:00 | 2026-10-13T10:29:22.957117+00:00
+predictive_repro_pipeline |              | validate_curated      | success | 2026-10-13T10:29:23.686961+00:00 | 2026-10-13T10:29:29.548798+00:00
+predictive_repro_pipeline |              | train_model           | success | 2026-10-13T10:29:30.415145+00:00 | 2026-10-13T10:30:21.233252+00:00
+predictive_repro_pipeline |              | evaluate_model        | success | 2026-10-13T10:30:22.187941+00:00 | 2026-10-13T10:31:07.947023+00:00
+predictive_repro_pipeline |              | reproducibility_check | success | 2026-10-13T10:31:10.147523+00:00 | 2026-10-13T10:31:21.748685+00:00
+predictive_repro_pipeline |              | publish_outputs       | success | 2026-10-13T10:31:23.298574+00:00 | 2026-10-13T10:31:28.046221+00:00
+                                                                                                                                                
+=== run record (outputs/run_summary.json) ===
+{
+  "pipeline_run_id": "af_quality_checks_run_01",
+  "started_at_utc": "2026-10-13T10:27:28+00:00",
+  "stages": [
+    {
+      "stage": "ingest-batches",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:27:28+00:00",
+      "finished_at_utc": "2026-10-13T10:27:30+00:00",
+      "duration_seconds": 1.62,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "stage": "verify-batches",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:27:34+00:00",
+      "finished_at_utc": "2026-10-13T10:27:36+00:00",
+      "duration_seconds": 2.08,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "stage": "build-staging",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:27:40+00:00",
+      "finished_at_utc": "2026-10-13T10:28:23+00:00",
+      "duration_seconds": 42.52,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "stage": "build-curated",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:28:28+00:00",
+      "finished_at_utc": "2026-10-13T10:29:00+00:00",
+      "duration_seconds": 32.27,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "stage": "load-postgres",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:29:04+00:00",
+      "finished_at_utc": "2026-10-13T10:29:22+00:00",
+      "duration_seconds": 17.82,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "stage": "validate-curated",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:29:26+00:00",
+      "finished_at_utc": "2026-10-13T10:29:29+00:00",
+      "duration_seconds": 2.3,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "stage": "train-model",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:29:34+00:00",
+      "finished_at_utc": "2026-10-13T10:30:20+00:00",
+      "duration_seconds": 46.62,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "stage": "evaluate-model",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:30:25+00:00",
+      "finished_at_utc": "2026-10-13T10:31:04+00:00",
+      "duration_seconds": 38.04,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "stage": "reproducibility-check",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:31:21+00:00",
+      "finished_at_utc": "2026-10-13T10:31:21+00:00",
+      "duration_seconds": 0.04,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "stage": "publish-outputs",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:31:27+00:00",
+      "finished_at_utc": "2026-10-13T10:31:27+00:00",
+      "duration_seconds": 0.27,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    }
+  ],
+  "status": "success",
+  "updated_at_utc": "2026-10-13T10:31:27+00:00",
+  "counts": {
+    "raw_rows": 114000,
+    "staging_rows": 89740,
+    "curated_rows": 89740,
+    "train_rows": 71792,
+    "test_rows": 17948,
+    "prediction_rows": 17948
+  }
+}
+=== quality-check log lines from the validate_curated task ===
+{"timestamp":"2026-10-13T10:29:28.714457Z","level":"info","event":"{\"timestamp\": \"2026-10-13T10:29:28+00:00\", \"pipeline_run_id\": \"af_quality_checks_run_01\", \"stage\": \"validate_curated\", \"message\": \"quality checks finished\", \"checks_run\": 9, \"checks_failed\": 0, \"duration_seconds\": 1.92}","task_id":"validate_curated","try_number":1,"map_index":-1,"ti_id":"01a134cd-6a07-77f3-8445-ad041f6971d9","dag_id":"predictive_repro_pipeline","run_id":"quality_checks_run_01","logger":"airflow.task.hooks.airflow.providers.standard.hooks.subprocess.SubprocessHook","filename":"subprocess.py","lineno":99}

@@ -17,9 +17,11 @@ Exit codes: 0 = success, 1 = unrecoverable error, 2 = simulated interruption.
 """
 import argparse
 import sys
+import time
 
 from src.benchmark import run_benchmark
-from src.config import load_settings, log_event, new_run_id
+from src.config import load_settings, log_event, new_run_id, utc_now_iso
+from src.run_record import record_stage
 from src.evaluate import (evaluate_model, publish_outputs,
                           reproducibility_check)
 from src.ingest import (IngestionError, SimulatedInterruption, full_ingest,
@@ -27,6 +29,7 @@ from src.ingest import (IngestionError, SimulatedInterruption, full_ingest,
 from src.storage import StorageError, load_curated, verify_load
 from src.train import ModelError, train_model
 from src.transform import ContractViolation, build_curated, build_staging
+from src.validate import QualityCheckFailed, validate_curated
 
 
 def build_parser():
@@ -50,6 +53,7 @@ def build_parser():
         "build-curated": "staging -> curated, model-ready columns",
         "load-postgres": "load the curated layer into PostgreSQL (rerun-safe)",
         "verify-postgres": "check PostgreSQL row count and duplicate keys",
+        "validate-curated": "run the quality and integrity checks, then verify PostgreSQL",
         "benchmark-storage": "compare CSV, JSONL, Parquet, partitions, PostgreSQL",
         "train-model": "deterministic split, train-only scaler, train the model",
         "evaluate-model": "predict the test rows, write metrics.json and predictions.csv",
@@ -67,6 +71,7 @@ def main(argv=None):
     settings = load_settings()
     run_id = args.run_id or new_run_id()
     log_event(run_id, "cli", "run started", command=args.command)
+    started_at, started = utc_now_iso(), time.time()
     try:
         if args.command == "ingest-full":
             full_ingest(settings, run_id)
@@ -83,6 +88,8 @@ def main(argv=None):
             load_curated(settings, run_id)
         elif args.command == "verify-postgres":
             verify_load(settings, run_id)
+        elif args.command == "validate-curated":
+            validate_curated(settings, run_id)
         elif args.command == "benchmark-storage":
             run_benchmark(settings, run_id)
         elif args.command == "train-model":
@@ -96,12 +103,19 @@ def main(argv=None):
     except SimulatedInterruption as error:
         log_event(run_id, "cli", "run finished", status="interrupted",
                   exit_code=2, error=str(error))
+        record_stage(settings, run_id, args.command, "interrupted", started_at,
+                     round(time.time() - started, 2), 2, str(error))
         return 2
-    except (IngestionError, ContractViolation, StorageError, ModelError) as error:
+    except (IngestionError, ContractViolation, StorageError, ModelError,
+            QualityCheckFailed) as error:
         log_event(run_id, "cli", "run finished", status="failed",
                   exit_code=1, error=str(error))
+        record_stage(settings, run_id, args.command, "failed", started_at,
+                     round(time.time() - started, 2), 1, str(error))
         return 1
     log_event(run_id, "cli", "run finished", status="success", exit_code=0)
+    record_stage(settings, run_id, args.command, "success", started_at,
+                 round(time.time() - started, 2), 0)
     return 0
 
 

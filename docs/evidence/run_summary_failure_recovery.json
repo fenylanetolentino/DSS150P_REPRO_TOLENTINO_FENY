@@ -1,0 +1,26 @@
+{
+  "pipeline_run_id": "failure_injection_recovery_001",
+  "started_at_utc": "2026-10-13T10:21:09+00:00",
+  "stages": [
+    {
+      "stage": "validate-curated",
+      "status": "success",
+      "started_at_utc": "2026-10-13T10:21:09+00:00",
+      "finished_at_utc": "2026-10-13T10:21:10+00:00",
+      "duration_seconds": 0.94,
+      "exit_code": 0,
+      "error": null,
+      "attempts": 1
+    }
+  ],
+  "status": "running",
+  "updated_at_utc": "2026-10-13T10:21:10+00:00",
+  "counts": {
+    "raw_rows": null,
+    "staging_rows": null,
+    "curated_rows": null,
+    "train_rows": null,
+    "test_rows": null,
+    "prediction_rows": null
+  }
+}

@@ -1,6 +1,6 @@
 {
-  "pipeline_run_id": "af_manual__20261013T072941.1087640000",
-  "generated_at_utc": "2026-10-13T07:33:20+00:00",
+  "pipeline_run_id": "af_quality_checks_run_01",
+  "generated_at_utc": "2026-10-13T10:31:21+00:00",
   "baseline_id": "spotify-popularity-rf-regressor-full-features",
   "primary_metric": "rmse",
   "tolerance_absolute": 0.03,

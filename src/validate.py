@@ -178,5 +178,229 @@ def main():
     print(f"Wrote {args.output}")
 
 
+from src.config import load_settings, resolve  # noqa: E402
+from src.transform import expected_count, load_contract  # noqa: E402
+
+CURATED_FILE = "curated.parquet"
+
+
+def _result(category, name, passed, detail):
+    return {"category": category, "check": name,
+            "passed": bool(passed), "detail": detail}
+
+
+def check_schema(frame, settings, contract):
+    """Required columns exist and the types are parseable."""
+    target = settings["target"]
+    tier = contract["derived_tier"]["name"]
+    required = (["source_row_key", "track_id", "track_genre", target, tier]
+                + list(settings["features"]))
+    missing = [c for c in required if c not in frame.columns]
+    if missing:
+        return _result("schema", "required_columns_and_types", False,
+                       f"missing columns: {missing}")
+    non_numeric = [c for c in settings["features"]
+                   if not pd.api.types.is_numeric_dtype(frame[c])]
+    if non_numeric or not pd.api.types.is_integer_dtype(frame[target]):
+        return _result("schema", "required_columns_and_types", False,
+                       f"bad dtypes: features {non_numeric}, target integer "
+                       f"{pd.api.types.is_integer_dtype(frame[target])}")
+    return _result("schema", "required_columns_and_types", True,
+                   f"{len(required)} required columns present with valid types")
+
+
+def check_completeness(frame, settings):
+    """Target and features have a null rate of 0 (contract target_complete)."""
+    columns = [settings["target"]] + list(settings["features"])
+    nulls = frame[columns].isna().sum()
+    bad = {name: int(count) for name, count in nulls.items() if count}
+    return _result("completeness", "target_and_features_null_rate_zero",
+                   not bad, f"columns with nulls: {bad}" if bad
+                   else f"0 nulls across {len(columns)} columns")
+
+
+def check_uniqueness(frame):
+    """The declared business key and the source row key have no duplicates."""
+    dup_track = int(frame["track_id"].duplicated().sum())
+    dup_row = int(frame["source_row_key"].duplicated().sum())
+    return _result("uniqueness", "track_id_and_source_row_key_unique",
+                   dup_track == 0 and dup_row == 0,
+                   f"duplicate track_id: {dup_track}, "
+                   f"duplicate source_row_key: {dup_row}")
+
+
+def check_validity(frame, contract):
+    """Contract ranges/allowed values hold; severity follows on_violation."""
+    problems, warnings = {}, {}
+    for spec in contract["columns"]:
+        name = spec["name"]
+        if name not in frame.columns:
+            continue
+        column = frame[name]
+        count = 0
+        if "min" in spec:
+            count += int((column < spec["min"]).sum())
+        if "max" in spec:
+            count += int((column > spec["max"]).sum())
+        if "allowed" in spec:
+            count += int((~column.isin(spec["allowed"])).sum())
+        if count:
+            target = warnings if spec.get("on_violation") == "warn" else problems
+            target[name] = count
+    detail = "all contract ranges and allowed values hold"
+    if problems or warnings:
+        detail = f"violations: {problems}; warn-only: {warnings}"
+    return _result("validity", "contract_ranges_and_allowed_values",
+                   not problems, detail)
+
+
+def check_business_rule(frame, contract):
+    """Project rule: curated rows equal the paper's cleaned count (contract)."""
+    expected = expected_count(contract, "staging_row_count")
+    return _result("business_rule", "curated_row_count_matches_contract",
+                   len(frame) == expected,
+                   f"curated rows {len(frame)}, contract expects {expected}")
+
+
+def check_source_checksum(settings, contract):
+    """Static dataset: verify the source version instead of freshness."""
+    path = resolve(settings["paths"]["source_file"])
+    if not path.exists():
+        return _result("freshness_applicability", "source_checksum_matches",
+                       False, f"source file not found at {path}")
+    actual = sha256_of_file(path)
+    expected = contract["source_sha256"]
+    return _result("freshness_applicability", "source_checksum_matches",
+                   actual == expected,
+                   f"actual {actual[:12]}..., expected {expected[:12]}...")
+
+
+def run_quality_checks(settings):
+    """Run every curated-layer quality check and return the result list."""
+    contract = load_contract(settings)
+    path = resolve(settings["paths"]["curated_dir"]) / CURATED_FILE
+    if not path.exists():
+        return [_result("schema", "curated_layer_exists", False,
+                        f"curated layer not found at {path}")]
+    frame = pd.read_parquet(path)
+    return [
+        check_schema(frame, settings, contract),
+        check_completeness(frame, settings),
+        check_uniqueness(frame),
+        check_validity(frame, contract),
+        check_business_rule(frame, contract),
+        check_source_checksum(settings, contract),
+    ]
+
+
+import json  # noqa: E402
+
+from src.train import ModelError, build_model_input, ids_checksum  # noqa: E402
+
+MODEL_CONFIG_FILE = "model_config.json"
+
+
+def check_no_target_leakage(settings, contract):
+    """The target and its derived tier are never model features."""
+    tier = contract["derived_tier"]["name"]
+    leaked = sorted({settings["target"], tier} & set(settings["features"]))
+    return _result("predictive_integrity", "no_target_leakage", not leaked,
+                   f"target/tier found in features: {leaked}" if leaked
+                   else f"{settings['target']} and {tier} are not in the "
+                        f"{len(settings['features'])} features")
+
+
+def check_feature_order(settings):
+    """Feature count and column order match what the model was trained with."""
+    features = list(settings["features"])
+    if len(features) != len(set(features)):
+        return _result("predictive_integrity", "feature_dimensions_and_order",
+                       False, "declared feature list contains duplicates")
+    config_path = (resolve(settings["paths"]["model_dir"]) / MODEL_CONFIG_FILE)
+    if not config_path.exists():
+        return _result("predictive_integrity", "feature_dimensions_and_order",
+                       True, f"{len(features)} declared features, no trained "
+                             "model yet to compare against")
+    trained = json.loads(config_path.read_text(encoding="utf-8"))["features"]
+    if trained != features:
+        return _result("predictive_integrity", "feature_dimensions_and_order",
+                       False, f"declared {features} but model trained on {trained}")
+    return _result("predictive_integrity", "feature_dimensions_and_order", True,
+                   f"{len(features)} features, same names and order as the "
+                   "trained model")
+
+
+def check_train_test_split(settings):
+    """No train/test overlap, and the split matches split_manifest.json."""
+    name = "train_test_overlap_and_manifest_match"
+    try:
+        model_input = build_model_input(settings)
+    except ModelError as error:
+        return _result("predictive_integrity", name, False, str(error))
+    frame = model_input["frame"]
+    keys = frame["source_row_key"].to_numpy()
+    track_ids = frame["track_id"].to_numpy()
+    train_pos, test_pos = model_input["train_pos"], model_input["test_pos"]
+    overlap_rows = len(set(keys[train_pos].tolist()) & set(keys[test_pos].tolist()))
+    overlap_tracks = len(set(track_ids[train_pos].tolist())
+                         & set(track_ids[test_pos].tolist()))
+    sizes_ok = len(train_pos) + len(test_pos) == len(frame)
+    manifest_path = resolve(settings["paths"]["split_manifest_file"])
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        train_match = (ids_checksum(sorted(keys[train_pos]))
+                       == manifest["train_ids_sha256_sorted"])
+        test_match = (ids_checksum(sorted(keys[test_pos]))
+                      == manifest["test_ids_sha256_sorted"])
+    else:
+        train_match = test_match = None  # no manifest yet: checksum comparison skipped
+    passed = (overlap_rows == 0 and overlap_tracks == 0 and sizes_ok
+              and train_match is not False and test_match is not False)
+    return _result("predictive_integrity", name, passed,
+                   f"train {len(train_pos)}, test {len(test_pos)}, "
+                   f"overlapping rows {overlap_rows}, overlapping track_id "
+                   f"{overlap_tracks}, sizes add up {sizes_ok}, train checksum "
+                   f"matches manifest {train_match}, test checksum matches "
+                   f"manifest {test_match}")
+
+
+def run_predictive_integrity_checks(settings):
+    """Run the predictive-integrity checks and return the result list."""
+    contract = load_contract(settings)
+    return [
+        check_no_target_leakage(settings, contract),
+        check_feature_order(settings),
+        check_train_test_split(settings),
+    ]
+
+
+import time  # noqa: E402
+
+from src.config import log_event  # noqa: E402
+
+
+class QualityCheckFailed(Exception):
+    """Raised when a curated-layer quality or integrity check fails."""
+
+
+def validate_curated(settings, run_id):
+    """Run every curated-layer check, log each result, then verify PostgreSQL."""
+    started = time.time()
+    results = run_quality_checks(settings) + run_predictive_integrity_checks(settings)
+    for result in results:
+        log_event(run_id, "validate_curated",
+                  "check passed" if result["passed"] else "check failed",
+                  category=result["category"], check=result["check"],
+                  passed=result["passed"], detail=result["detail"])
+    failed = [result["check"] for result in results if not result["passed"]]
+    log_event(run_id, "validate_curated", "quality checks finished",
+              checks_run=len(results), checks_failed=len(failed),
+              duration_seconds=round(time.time() - started, 2))
+    if failed:
+        raise QualityCheckFailed(f"quality checks failed: {failed}")
+    from src.storage import verify_load
+    return verify_load(settings, run_id)
+
+
 if __name__ == "__main__":
     main()

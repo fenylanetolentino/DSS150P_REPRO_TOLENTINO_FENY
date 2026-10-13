@@ -1,0 +1,19 @@
+=== DAG runs (failed run, then recovered run) ===
+dag_id                    | run_id                          | state   | run_after                       | logical_date              | start_date                      | end_date                        
+==========================+=================================+=========+=================================+===========================+=================================+=================================
+predictive_repro_pipeline | manual__2026-10-13T07:29:41.108 | success | 2026-10-13T07:29:41.108764+00:0 | 2026-10-13T07:29:39+00:00 | 2026-10-13T07:29:42.549916+00:0 | 2026-10-13T07:33:25.258701+00:00
+                          | 764+00:00                       |         | 0                               |                           | 0                               |                                 
+predictive_repro_pipeline | manual__2026-10-13T07:19:48.337 | failed  | 2026-10-13T07:19:48.337410+00:0 | 2026-10-13T07:19:45+00:00 | 2026-10-13T07:19:49.877949+00:0 | 2026-10-13T07:24:13.883488+00:00
+                          | 410+00:00                       |         | 0                               |                           | 0                               |                                 
+predictive_repro_pipeline | manual__2026-10-13T07:06:58.017 | success | 2026-10-13T07:06:58.017645+00:0 | 2026-10-13T07:06:43+00:00 | 2026-10-13T07:06:59.951654+00:0 | 2026-10-13T07:10:57.092941+00:00
+                          | 645+00:00                       |         | 0                               |                           | 0                               |                                 
+                                                                                                                                                                                                        
+
+=== verify-postgres after recovery ===
+{"timestamp": "2026-10-13T07:34:09+00:00", "pipeline_run_id": "run_20261013T073409Z_0db6aa", "stage": "cli", "message": "run started", "command": "verify-postgres"}
+{"timestamp": "2026-10-13T07:34:10+00:00", "pipeline_run_id": "run_20261013T073409Z_0db6aa", "stage": "verify_postgres", "message": "table verification", "table_rows": 89740, "distinct_track_ids": 89740, "duplicate_track_ids": 0, "expected_rows": 89740, "matches_curated": true}
+{"timestamp": "2026-10-13T07:34:10+00:00", "pipeline_run_id": "run_20261013T073409Z_0db6aa", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+
+=== Outputs now carry the recovery run's ID ===
+  "pipeline_run_id": "af_manual__20261013T072941.1087640000",
+  "outcome": "matches_within_tolerance"

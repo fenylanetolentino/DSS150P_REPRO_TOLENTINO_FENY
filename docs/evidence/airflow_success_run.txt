@@ -1,0 +1,73 @@
+=== DAG run ===
+dag_id                    | run_id                          | state   | run_after                       | logical_date              | start_date                      | end_date                        
+==========================+=================================+=========+=================================+===========================+=================================+=================================
+predictive_repro_pipeline | manual__2026-10-13T07:06:58.017 | success | 2026-10-13T07:06:58.017645+00:0 | 2026-10-13T07:06:43+00:00 | 2026-10-13T07:06:59.951654+00:0 | 2026-10-13T07:10:57.092941+00:00
+                          | 645+00:00                       |         | 0                               |                           | 0                               |                                 
+                                                                                                                                                                                                        
+
+=== Task states ===
+dag_id                    | logical_date              | task_id               | state   | start_date                       | end_date                        
+==========================+===========================+=======================+=========+==================================+=================================
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | ingest_source         | success | 2026-10-13T07:07:00.745954+00:00 | 2026-10-13T07:07:19.386267+00:00
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | validate_raw          | success | 2026-10-13T07:07:20.681902+00:00 | 2026-10-13T07:07:27.298718+00:00
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | transform_staging     | success | 2026-10-13T07:07:28.518881+00:00 | 2026-10-13T07:08:20.356806+00:00
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | build_curated         | success | 2026-10-13T07:08:21.064255+00:00 | 2026-10-13T07:09:05.337990+00:00
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | load_postgres         | success | 2026-10-13T07:09:06.581849+00:00 | 2026-10-13T07:09:27.889295+00:00
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | validate_curated      | success | 2026-10-13T07:09:28.409615+00:00 | 2026-10-13T07:09:31.966286+00:00
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | train_model           | success | 2026-10-13T07:09:32.761265+00:00 | 2026-10-13T07:10:21.856871+00:00
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | evaluate_model        | success | 2026-10-13T07:10:22.935854+00:00 | 2026-10-13T07:10:46.778079+00:00
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | reproducibility_check | success | 2026-10-13T07:10:47.473743+00:00 | 2026-10-13T07:10:51.603641+00:00
+predictive_repro_pipeline | 2026-10-13T07:06:43+00:00 | publish_outputs       | success | 2026-10-13T07:10:52.582774+00:00 | 2026-10-13T07:10:56.726895+00:00
+                                                                                                                                                             
+
+=== Pipeline run records in PostgreSQL (Airflow-triggered) ===
+            pipeline_run_id            |     stage     | status  |     started_at_utc     |    finished_at_utc     | rows_read | rows_inserted | rows_updated | rows_unchanged | error_message 
+---------------------------------------+---------------+---------+------------------------+------------------------+-----------+---------------+--------------+----------------+---------------
+ af_manual__20261013T070658.0176450000 | load_postgres | success | 2026-10-13 07:09:11+00 | 2026-10-13 07:09:27+00 |     89740 |             0 |            0 |          89740 | 
+(1 row)
+
+
+=== verify-postgres after the DAG run ===
+{"timestamp": "2026-10-13T07:12:16+00:00", "pipeline_run_id": "run_20261013T071216Z_46c315", "stage": "cli", "message": "run started", "command": "verify-postgres"}
+{"timestamp": "2026-10-13T07:12:16+00:00", "pipeline_run_id": "run_20261013T071216Z_46c315", "stage": "verify_postgres", "message": "table verification", "table_rows": 89740, "distinct_track_ids": 89740, "duplicate_track_ids": 0, "expected_rows": 89740, "matches_curated": true}
+{"timestamp": "2026-10-13T07:12:16+00:00", "pipeline_run_id": "run_20261013T071216Z_46c315", "stage": "cli", "message": "run finished", "status": "success", "exit_code": 0}
+
+=== Metric comparison written by the DAG ===
+{
+  "pipeline_run_id": "af_manual__20261013T070658.0176450000",
+  "generated_at_utc": "2026-10-13T07:10:51+00:00",
+  "baseline_id": "spotify-popularity-rf-regressor-full-features",
+  "primary_metric": "rmse",
+  "tolerance_absolute": 0.03,
+  "metrics": {
+    "rmse": {
+      "baseline": 17.959,
+      "reproduced": 17.972665,
+      "difference": 0.013665,
+      "within_tolerance": true,
+      "matches_to_3_decimals": false
+    },
+    "mae": {
+      "baseline": 13.741,
+      "reproduced": 13.752547,
+      "difference": 0.011547,
+      "within_tolerance": true,
+      "matches_to_3_decimals": false
+    },
+    "r2": {
+      "baseline": 0.236,
+      "reproduced": 0.234386,
+      "difference": -0.001614,
+      "within_tolerance": true,
+      "matches_to_3_decimals": false
+    }
+  },
+  "structure_checks": {
+    "features_and_order_match": true,
+    "train_rows_match": true,
+    "test_rows_match": true,
+    "random_state_matches": true,
+    "predictions_count_matches_test_rows": true
+  },
+  "outcome": "matches_within_tolerance"
+}

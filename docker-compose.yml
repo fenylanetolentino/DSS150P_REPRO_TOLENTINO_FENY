@@ -40,5 +40,38 @@ services:
       - ./metadata:/app/metadata
       - ./outputs:/app/outputs
 
+  airflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    image: dss150p-airflow:local
+    container_name: dss150p-airflow
+    command: standalone
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${AIRFLOW_PORT:-8088}:8080"
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/project/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "True"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/state/airflow.db
+      PIPELINE_PROJECT_DIR: /opt/airflow/project
+      PIPELINE_PYTHON: /opt/airflow/pipeline-venv/bin/python
+      SOURCE_FILE_PATH: data/source/dataset.csv
+      RANDOM_SEED: ${RANDOM_SEED:-42}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - .:/opt/airflow/project
+      - airflow_state:/opt/airflow/state
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  airflow_state:

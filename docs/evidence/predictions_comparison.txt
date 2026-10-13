@@ -1,0 +1,12 @@
+Comparison: predictions.csv committed in fd83b4f (local run, Python 3.12.10)
+        vs  Airflow DAG run af_manual__20261013T070658 (Python 3.12.14)
+rows old/new: 17948 17948
+same columns: True
+source_row_key identical: True
+track_id identical: True
+popularity_tier identical: True
+actual_popularity identical: True
+rows with any prediction difference: 822
+max abs difference: 2.1316282072803006e-14
+rows differing by more than 1e-9: 0
+conclusion: equal within floating-point precision; not byte-identical across environments

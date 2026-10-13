@@ -1,0 +1,6 @@
+Task log: dag_id=predictive_repro_pipeline, run_id=manual__2026-10-13T07:19:48.337410+00:00, task_id=load_postgres, attempt=3
+Cause: PostgreSQL container was stopped on purpose (failure injection).
+[2026-10-13 15:23:57] Running command: cd /opt/airflow/project && /opt/airflow/pipeline-venv/bin/python -m src.cli load-postgres --run-id af_manual__20261013T071948.3374100000
+[2026-10-13 15:23:59] stage=cli, message="run started", command=load-postgres
+[2026-10-13 15:24:00] stage=load_postgres, message="load started", rows_read=89740
+[2026-10-13 15:24:08] stage=cli, message="run finished", status=failed, exit_code=1, error="cannot connect to PostgreSQL: could not translate host name \"postgres\" to address: Name or service not known"

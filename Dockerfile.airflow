@@ -1,0 +1,12 @@
+# syntax=docker/dockerfile:1
+# DSS150P Lab 4 - Airflow orchestrator image (public base image).
+# The pipeline's pinned packages live in a separate venv so they cannot
+# conflict with Airflow's own dependencies.
+FROM apache/airflow:3.3.2-python3.12
+
+USER airflow
+COPY --chown=airflow:0 requirements.txt /tmp/requirements.txt
+RUN python -m venv /opt/airflow/pipeline-venv
+RUN --mount=type=cache,target=/home/airflow/.cache/pip,uid=50000 \
+    /opt/airflow/pipeline-venv/bin/pip install --default-timeout=120 --retries 10 -r /tmp/requirements.txt
+RUN mkdir -p /opt/airflow/state

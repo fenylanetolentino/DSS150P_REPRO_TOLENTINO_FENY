@@ -1,0 +1,31 @@
+=== Failed DAG run ===
+dag_id                    | run_id                          | state   | run_after                       | logical_date              | start_date                      | end_date                        
+==========================+=================================+=========+=================================+===========================+=================================+=================================
+predictive_repro_pipeline | manual__2026-10-13T07:19:48.337 | failed  | 2026-10-13T07:19:48.337410+00:0 | 2026-10-13T07:19:45+00:00 | 2026-10-13T07:19:49.877949+00:0 | 2026-10-13T07:24:13.883488+00:00
+                          | 410+00:00                       |         | 0                               |                           | 0                               |                                 
+predictive_repro_pipeline | manual__2026-10-13T07:06:58.017 | success | 2026-10-13T07:06:58.017645+00:0 | 2026-10-13T07:06:43+00:00 | 2026-10-13T07:06:59.951654+00:0 | 2026-10-13T07:10:57.092941+00:00
+                          | 645+00:00                       |         | 0                               |                           | 0                               |                                 
+                                                                                                                                                                                                        
+
+=== Task states of the failed run ===
+dag_id                    | logical_date              | task_id               | state           | start_date                       | end_date                        
+==========================+===========================+=======================+=================+==================================+=================================
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | ingest_source         | success         | 2026-10-13T07:19:50.674129+00:00 | 2026-10-13T07:19:57.824716+00:00
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | validate_raw          | success         | 2026-10-13T07:19:58.429891+00:00 | 2026-10-13T07:20:04.440546+00:00
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | transform_staging     | success         | 2026-10-13T07:20:04.989042+00:00 | 2026-10-13T07:20:52.309730+00:00
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | build_curated         | success         | 2026-10-13T07:20:53.191405+00:00 | 2026-10-13T07:21:31.050281+00:00
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | load_postgres         | failed          | 2026-10-13T07:23:57.087423+00:00 | 2026-10-13T07:24:08.844160+00:00
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | validate_curated      | upstream_failed | 2026-10-13T07:24:09.433478+00:00 | 2026-10-13T07:24:09.433478+00:00
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | train_model           | upstream_failed | 2026-10-13T07:24:10.502905+00:00 | 2026-10-13T07:24:10.502905+00:00
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | evaluate_model        | upstream_failed | 2026-10-13T07:24:10.684118+00:00 | 2026-10-13T07:24:10.684118+00:00
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | reproducibility_check | upstream_failed | 2026-10-13T07:24:11.763170+00:00 | 2026-10-13T07:24:11.763170+00:00
+predictive_repro_pipeline | 2026-10-13T07:19:45+00:00 | publish_outputs       | upstream_failed | 2026-10-13T07:24:12.823309+00:00 | 2026-10-13T07:24:12.823309+00:00
+                                                                                                                                                                     
+
+=== Was outputs/ overwritten by the failed run? (pipeline_run_id inside the files) ===
+  "pipeline_run_id": "af_manual__20261013T070658.0176450000",
+  "pipeline_run_id": "af_manual__20261013T070658.0176450000",
+  "pipeline_run_id": "af_manual__20261013T070658.0176450000",
+
+=== Postgres is stopped (expected: not listed) ===
+0

@@ -1,6 +1,6 @@
 {
-  "pipeline_run_id": "run_20261012T053941Z_efaef8",
-  "generated_at_utc": "2026-10-12T05:39:44+00:00",
+  "pipeline_run_id": "af_manual__20261013T072941.1087640000",
+  "generated_at_utc": "2026-10-13T07:33:14+00:00",
   "primary_metric": "rmse",
   "metrics": {
     "rmse": 17.972665422019826,
@@ -44,7 +44,7 @@
   "split_test_ids_sha256_in_order": "645a3b5cbcae06556370d7835ca54521d0d4b0ab64eab0e376ad17c27a663ab3",
   "curated_data_checksum": "d73e99f9b9e2db928a59eb6452829a05d62c4de3ec1d296717ac7a61084254d8",
   "library_versions": {
-    "python": "3.12.10",
+    "python": "3.12.14",
     "scikit-learn": "1.9.1",
     "numpy": "2.5.3",
     "pandas": "3.0.6"

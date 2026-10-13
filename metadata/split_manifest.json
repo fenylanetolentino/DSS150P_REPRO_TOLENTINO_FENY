@@ -1,0 +1,34 @@
+{
+  "pipeline_run_id": "run_20261012T053850Z_b9d60e",
+  "created_at_utc": "2026-10-12T05:38:51+00:00",
+  "method": "stratified_train_test_split",
+  "random_state": 42,
+  "test_size": 0.2,
+  "stratify_on": "popularity_tier",
+  "tier_encoding": {
+    "High": 0,
+    "Low": 1,
+    "Mid": 2
+  },
+  "id_column": "source_row_key",
+  "input_order": "source_row_key ascending (curated layer)",
+  "train_order": "as returned by train_test_split (not sorted)",
+  "total_rows": 89740,
+  "train_rows": 71792,
+  "test_rows": 17948,
+  "train_tier_counts": {
+    "High": 3616,
+    "Low": 36127,
+    "Mid": 32049
+  },
+  "test_tier_counts": {
+    "High": 904,
+    "Low": 9032,
+    "Mid": 8012
+  },
+  "train_ids_sha256_in_order": "a8a5ed2176f7df04726cd6060ee467863ffe5527af448c483ca6aea44be50d25",
+  "train_ids_sha256_sorted": "854dcc798f6e7dff565fe3ea67a99fc33f1bff1389e7b2f7bbbda0ce04d83758",
+  "test_ids_sha256_in_order": "645a3b5cbcae06556370d7835ca54521d0d4b0ab64eab0e376ad17c27a663ab3",
+  "test_ids_sha256_sorted": "26d11445d2deb115bd50285d5ce4988ad73ee91a010c3644caeed921988800cc",
+  "curated_data_checksum": "d73e99f9b9e2db928a59eb6452829a05d62c4de3ec1d296717ac7a61084254d8"
+}

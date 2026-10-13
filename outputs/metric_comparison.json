@@ -1,0 +1,38 @@
+{
+  "pipeline_run_id": "run_20261013T055229Z_792ba9",
+  "generated_at_utc": "2026-10-13T05:52:29+00:00",
+  "baseline_id": "spotify-popularity-rf-regressor-full-features",
+  "primary_metric": "rmse",
+  "tolerance_absolute": 0.03,
+  "metrics": {
+    "rmse": {
+      "baseline": 17.959,
+      "reproduced": 17.972665,
+      "difference": 0.013665,
+      "within_tolerance": true,
+      "matches_to_3_decimals": false
+    },
+    "mae": {
+      "baseline": 13.741,
+      "reproduced": 13.752547,
+      "difference": 0.011547,
+      "within_tolerance": true,
+      "matches_to_3_decimals": false
+    },
+    "r2": {
+      "baseline": 0.236,
+      "reproduced": 0.234386,
+      "difference": -0.001614,
+      "within_tolerance": true,
+      "matches_to_3_decimals": false
+    }
+  },
+  "structure_checks": {
+    "features_and_order_match": true,
+    "train_rows_match": true,
+    "test_rows_match": true,
+    "random_state_matches": true,
+    "predictions_count_matches_test_rows": true
+  },
+  "outcome": "matches_within_tolerance"
+}

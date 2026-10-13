@@ -43,7 +43,16 @@
     "r2": 0.236
   },
   "tolerance": {
-    "rule": "Pass if absolute difference is at most 0.01 on each metric; primary metric is rmse. Baseline values are reported to 3 decimals.",
-    "absolute": 0.01
+    "rule": "Pass if absolute difference is at most 0.03 on each metric; primary metric is rmse. Baseline values are reported to 3 decimals.",
+    "absolute": 0.03,
+    "default_absolute": 0.01,
+    "approval": {
+      "approved_by": "course instructor",
+      "channel": "email reply",
+      "approved_on": "2026-10-13",
+      "reply": "yes, it's okay",
+      "request": "use +/-0.03 instead of the recommended +/-0.01",
+      "reason": "Baseline library versions were not recorded in the group project, so the original environment cannot be restored. With the split fixed, changing only the model seed moved RMSE between 17.945 and 17.979."
+    }
   }
 }
